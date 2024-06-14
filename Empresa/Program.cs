@@ -2,6 +2,7 @@ using Empresa.Models;
 using Empresa;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,55 +22,53 @@ app.MapGet("/dbconexion", async ([FromServices] EmpresaContext dbContext) =>
 	return "Base de datos creada";
 });
 
-app.MapGet("/api/empleados", async ([FromServices] EmpresaContext dbContext) =>
+app.MapGet("/api/empleados/all", async ([FromServices] EmpresaContext dbContext) =>
 {
 	var empleados = await dbContext.Empleado.Include(e => e.Ciudad).ToListAsync();
+
 	return Results.Ok(dbContext.Empleado);
 });
 
-// El método deberá de permitir insertar todos los datos de un nuevo Empleado, incluyendo los id de Ciudad y Departamento
-app.MapPost("/api/empleados", async([FromServices] EmpresaContext dbContext, [FromBody] Empleado empleado) =>
+app.MapPost("/api/empleados/add", async([FromServices] EmpresaContext dbContext, [FromBody] Empleado empleado) =>
 {
+	var empleados = dbContext.Empleado.Count();
 	empleado.FechaIngreso = DateTime.Now;
-	await dbContext.Empleado.AddAsync(empleado);
+	
+	await dbContext.AddAsync(empleado);
 	await dbContext.SaveChangesAsync();
 
 	return Results.Ok($"El empleado {empleado.Nombre} fue creado correctamente");
 });
-//app.MapPost("/api/empleados", async ([FromServices] EmpresaContext dbContext, [FromBody] Empleado empleado, EmpleadoDepartamento empDep) =>
-//{
-//	await dbContext.Empleado.AddAsync(empleado);
-//	await dbContext.EmpleadoDepartamento.AddAsync(empDep);
-//	await dbContext.SaveChangesAsync();
 
-//	return Results.Ok($"El empleado {empleado.Nombre} fue creado correctamente");
-//});
-
-// Ruta por metodo put para Modificar todos los datos de un Empleado específico (solo los datos del Empleado)
-app.MapPut("/api/empleados/{id}", async ([FromServices] EmpresaContext dbContext, int id, [FromBody] Empleado empleado) =>
+app.MapPut("/api/empleados/edit/{id}", async ([FromServices] EmpresaContext dbContext, [FromBody] Empleado empleado, [FromRoute] int id) =>
 {
-	var empleadoModificado = await dbContext.Empleado.FindAsync(id);
-	if (empleadoModificado != null)
+	var empleadoEdit = await dbContext.Empleado.FindAsync(id);
+
+	if (empleadoEdit != null)
 	{
-		empleadoModificado.Nombre = empleado.Nombre;
-		empleadoModificado.FechaIngreso = empleado.FechaIngreso;
-		empleadoModificado.Puesto = empleado.Puesto;
-		empleadoModificado.Sueldo = empleado.Sueldo;
+		empleadoEdit.Nombre = empleado.Nombre;
+		empleadoEdit.Puesto = empleado.Puesto;
+		empleadoEdit.Sueldo = empleado.Sueldo;
+		empleadoEdit.CiudadId = empleado.CiudadId;
+
 		await dbContext.SaveChangesAsync();
+
 		return Results.Ok($"El empleado {empleado.Nombre} fue modificado correctamente");
 	}
 
 	return Results.NotFound($"No se encontró el empleado con el id {id}");
 });
 
-// Ruta por metodo delete para Eliminar un Empleado específico
-app.MapDelete("/api/empleados/{id}", async([FromServices] EmpresaContext dbContext, int id) =>
+app.MapDelete("/api/empleados/del/{id}", async([FromServices] EmpresaContext dbContext, int id) =>
 {
 	var empleado = await dbContext.Empleado.FindAsync(id);
+
 	if (empleado != null)
 	{
 		dbContext.Empleado.Remove(empleado);
+
 		await dbContext.SaveChangesAsync();
+
 		return Results.Ok($"El empleado {empleado.Nombre} fue eliminado correctamente");
 	}
 

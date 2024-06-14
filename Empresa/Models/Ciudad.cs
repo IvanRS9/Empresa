@@ -7,6 +7,6 @@ namespace Empresa.Models
 		public int CiudadId { get; set; }
 		public string Nombre { get; set; }
 		[JsonIgnore]
-		public ICollection<Empleado> Empleado { get; set; }
+		public virtual ICollection<Empleado> Empleado { get; set; }
 	}
 }

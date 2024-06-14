@@ -12,14 +12,14 @@ namespace Empresa.Models
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
-			// Genera seed data para la tabla Ciudad en una lista
+			// Seed data para la tabla Ciudad
 			List<Ciudad> ciudadInit = new List<Ciudad>();
 			ciudadInit.Add(new Ciudad { CiudadId = 1, Nombre = "Guadalajara" });
 			ciudadInit.Add(new Ciudad { CiudadId = 2, Nombre = "Zapopan" });
 			ciudadInit.Add(new Ciudad { CiudadId = 3, Nombre = "Tlaquepaque" });
 			ciudadInit.Add(new Ciudad { CiudadId = 4, Nombre = "Tonala" });
 
-			// Genera el modelo de la tabla Ciudad
+			// Modelo de la tabla Ciudad
 			modelBuilder.Entity<Ciudad>(ciudad =>
 			{
 				ciudad.HasKey(c => c.CiudadId);
@@ -27,13 +27,13 @@ namespace Empresa.Models
 				ciudad.HasData(ciudadInit);
 			});
 
-			// Genera el seed data para la tabla Departamento en una lista
+			// Seed data para la tabla Departamento
 			List<Departamento> departamentoInit = new List<Departamento>();
 			departamentoInit.Add(new Departamento { DepartamentoId = 1, Nombre = "Recursos Humanos", Descripcion = "Departamento de Recursos Humanos" });
 			departamentoInit.Add(new Departamento { DepartamentoId = 2, Nombre = "Ventas", Descripcion = "Departamento de Ventas" });
 			departamentoInit.Add(new Departamento { DepartamentoId = 3, Nombre = "Compras", Descripcion = "Departamento de Compras" });
 
-			// Genera el modelo de la tabla Departamento
+			// Modelo de la tabla Departamento
 			modelBuilder.Entity<Departamento>(departamento =>
 			{
 				departamento.HasKey(d => d.DepartamentoId);
@@ -42,37 +42,39 @@ namespace Empresa.Models
 				departamento.HasData(departamentoInit);
 			});
 
-			// Genera el seed data para la tabla Empleado en una lista
+			// Seed data para la tabla Empleado en una lista
 			List<Empleado> empleadoInit = new List<Empleado>();
 			empleadoInit.Add(new Empleado { EmpleadoId = 1, Nombre = "Juan Perez", FechaIngreso = DateTime.Now, Puesto = "Gerente", Sueldo = 10000, CiudadId = 1 });
 			empleadoInit.Add(new Empleado { EmpleadoId = 2, Nombre = "Maria Lopez", FechaIngreso = DateTime.Now, Puesto = "Vendedor", Sueldo = 8000, CiudadId = 2 });
 			empleadoInit.Add(new Empleado { EmpleadoId = 3, Nombre = "Pedro Ramirez", FechaIngreso = DateTime.Now, Puesto = "Comprador", Sueldo = 9000, CiudadId = 3 });
 
-			// Genera el modelo de la tabla Empleado
+			// Modelo de la tabla Empleado
 			modelBuilder.Entity<Empleado>(empleado =>
 			{
+				empleado.ToTable("Empleados");
 				empleado.HasKey(e => e.EmpleadoId);
+				empleado.Property(e => e.EmpleadoId).ValueGeneratedOnAdd();
 				empleado.Property(e => e.Nombre).HasMaxLength(50).IsRequired();
 				empleado.Property(e => e.FechaIngreso).IsRequired();
 				empleado.Property(e => e.Puesto).HasMaxLength(50).IsRequired();
 				empleado.Property(e => e.Sueldo).IsRequired();
-				empleado.HasOne(e => e.Ciudad).WithMany(c => c.Empleado).HasForeignKey(e => e.CiudadId);
+				empleado.HasMany(e => e.EmpleadoDepartamentos).WithOne(ed => ed.Empleado).HasForeignKey(ed => ed.EmpleadoId);
 				
 				empleado.HasData(empleadoInit);
 			});
 
-			// Genera el seed data para la tabla EmpleadoDepartamento en una lista
+			// Seed data para la tabla EmpleadoDepartamento
 			List<EmpleadoDepartamento> empleadoDepartamentoInit = new List<EmpleadoDepartamento>();
 			empleadoDepartamentoInit.Add(new EmpleadoDepartamento { EmpleadoId = 1, DepartamentoId = 1 });
 			empleadoDepartamentoInit.Add(new EmpleadoDepartamento { EmpleadoId = 2, DepartamentoId = 2 });
 			empleadoDepartamentoInit.Add(new EmpleadoDepartamento { EmpleadoId = 3, DepartamentoId = 3 });
 
-			// Genera el modelo de la tabla EmpleadoDepartamento
+			// Modelo de la tabla EmpleadoDepartamento
 			modelBuilder.Entity<EmpleadoDepartamento>(empleadoDepartamento =>
 			{
 				empleadoDepartamento.HasKey(ed => new { ed.EmpleadoId, ed.DepartamentoId });
 				empleadoDepartamento.HasOne(ed => ed.Departamento).WithMany(d => d.EmpleadoDepartamento).HasForeignKey(ed => ed.DepartamentoId);
-				empleadoDepartamento.HasOne(ed => ed.Empleado).WithMany(e => e.EmpleadoDepartamento).HasForeignKey(ed => ed.EmpleadoId);
+				empleadoDepartamento.HasOne(ed => ed.Empleado).WithMany(e => e.EmpleadoDepartamentos).HasForeignKey(ed => ed.EmpleadoId);
 
 				empleadoDepartamento.HasData(empleadoDepartamentoInit);
 			});

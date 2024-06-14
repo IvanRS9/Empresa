@@ -9,9 +9,8 @@ namespace Empresa.Models
 		public DateTime FechaIngreso { get; set; }
 		public string Puesto { get; set; }
 		public double Sueldo { get; set; }
-		[JsonIgnore]
-		public ICollection<EmpleadoDepartamento> EmpleadoDepartamento { get; set; }
 		public int CiudadId { get; set; }
 		public Ciudad Ciudad { get; set; }
+		public ICollection<EmpleadoDepartamento> EmpleadoDepartamentos { get; set; }
 	}
 }
