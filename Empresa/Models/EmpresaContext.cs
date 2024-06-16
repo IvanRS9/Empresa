@@ -22,6 +22,7 @@ namespace Empresa.Models
 			// Modelo de la tabla Ciudad
 			modelBuilder.Entity<Ciudad>(ciudad =>
 			{
+				ciudad.ToTable("Ciudad");
 				ciudad.HasKey(c => c.CiudadId);
 				ciudad.Property(c => c.Nombre).HasMaxLength(50).IsRequired();
 				ciudad.HasData(ciudadInit);
@@ -36,6 +37,7 @@ namespace Empresa.Models
 			// Modelo de la tabla Departamento
 			modelBuilder.Entity<Departamento>(departamento =>
 			{
+				departamento.ToTable("Departamento");
 				departamento.HasKey(d => d.DepartamentoId);
 				departamento.Property(d => d.Nombre).HasMaxLength(50).IsRequired();
 				departamento.Property(d => d.Descripcion).HasMaxLength(100).IsRequired();
@@ -51,14 +53,16 @@ namespace Empresa.Models
 			// Modelo de la tabla Empleado
 			modelBuilder.Entity<Empleado>(empleado =>
 			{
-				empleado.ToTable("Empleados");
+				empleado.ToTable("Empleado");
 				empleado.HasKey(e => e.EmpleadoId);
 				empleado.Property(e => e.EmpleadoId).ValueGeneratedOnAdd();
 				empleado.Property(e => e.Nombre).HasMaxLength(50).IsRequired();
 				empleado.Property(e => e.FechaIngreso).IsRequired();
 				empleado.Property(e => e.Puesto).HasMaxLength(50).IsRequired();
 				empleado.Property(e => e.Sueldo).IsRequired();
+				// Generar la relación con la tabla EmpleadoDepartamento para la relación muchos a muchos
 				empleado.HasMany(e => e.EmpleadoDepartamentos).WithOne(ed => ed.Empleado).HasForeignKey(ed => ed.EmpleadoId);
+				
 				
 				empleado.HasData(empleadoInit);
 			});
@@ -72,6 +76,7 @@ namespace Empresa.Models
 			// Modelo de la tabla EmpleadoDepartamento
 			modelBuilder.Entity<EmpleadoDepartamento>(empleadoDepartamento =>
 			{
+				empleadoDepartamento.ToTable("EmpleadoDepartamento");
 				empleadoDepartamento.HasKey(ed => new { ed.EmpleadoId, ed.DepartamentoId });
 				empleadoDepartamento.HasOne(ed => ed.Departamento).WithMany(d => d.EmpleadoDepartamento).HasForeignKey(ed => ed.DepartamentoId);
 				empleadoDepartamento.HasOne(ed => ed.Empleado).WithMany(e => e.EmpleadoDepartamentos).HasForeignKey(ed => ed.EmpleadoId);

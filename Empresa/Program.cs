@@ -29,16 +29,31 @@ app.MapGet("/api/empleados/all", async ([FromServices] EmpresaContext dbContext)
 	return Results.Ok(dbContext.Empleado);
 });
 
-app.MapPost("/api/empleados/add", async([FromServices] EmpresaContext dbContext, [FromBody] Empleado empleado) =>
+app.MapPost("/api/empleados/add", async ([FromServices] EmpresaContext dbContext, [FromBody] EmpleadoDTO empleadoDTO) =>
 {
-	var empleados = dbContext.Empleado.Count();
-	empleado.FechaIngreso = DateTime.Now;
-	
-	await dbContext.AddAsync(empleado);
+	var empleado = new Empleado
+	{
+		Nombre = empleadoDTO.Nombre,
+		Puesto = empleadoDTO.Puesto,
+		Sueldo = empleadoDTO.Sueldo,
+		CiudadId = empleadoDTO.CiudadId
+	};
+
+	await dbContext.Empleado.AddAsync(empleado);
 	await dbContext.SaveChangesAsync();
 
-	return Results.Ok($"El empleado {empleado.Nombre} fue creado correctamente");
+	var empleadoDepartamento = new EmpleadoDepartamento
+	{
+		EmpleadoId = empleado.EmpleadoId,
+		DepartamentoId = empleadoDTO.DepartamentoId
+	};
+
+	await dbContext.EmpleadoDepartamento.AddAsync(empleadoDepartamento);
+	await dbContext.SaveChangesAsync();
+
+	return Results.Ok($"El empleado {empleado.Nombre} fue agregado correctamente");
 });
+
 
 app.MapPut("/api/empleados/edit/{id}", async ([FromServices] EmpresaContext dbContext, [FromBody] Empleado empleado, [FromRoute] int id) =>
 {
