@@ -90,6 +90,66 @@ app.MapDelete("/api/empleados/del/{id}", async([FromServices] EmpresaContext dbC
 	return Results.NotFound($"No se encontró el empleado con el id {id}");
 });
 
+app.MapGet("/api/departamentos/all", async([FromServices] EmpresaContext dbContext) =>
+{
+	var departamentos = await dbContext.Departamento.ToListAsync();
+
+	return Results.Ok(departamentos);
+});
+
+app.MapGet("/api/departamentos/{id}", async([FromServices] EmpresaContext dbContext, int id) =>
+{
+	var departamento = await dbContext.Departamento.FindAsync(id);
+
+	if (departamento != null)
+	{
+		return Results.Ok(departamento);
+	}
+
+	return Results.NotFound($"No se encontró el departamento con el id {id}");
+});
+
+app.MapPost("/api/departamentos/add", async([FromServices] EmpresaContext dbContext, [FromBody] Departamento departamento) =>
+{
+	await dbContext.Departamento.AddAsync(departamento);
+	await dbContext.SaveChangesAsync();
+
+	return Results.Ok($"El departamento {departamento.Nombre} fue agregado correctamente");
+});
+
+app.MapPut("/api/departamentos/edit/{id}", async([FromServices] EmpresaContext dbContext, [FromBody] Departamento departamento, [FromRoute] int id) =>
+{
+	var departamentoEdit = await dbContext.Departamento.FindAsync(id);
+
+	if (departamentoEdit != null)
+	{
+		departamentoEdit.Nombre = departamento.Nombre;
+		departamentoEdit.Descripcion = departamento.Descripcion;
+
+		await dbContext.SaveChangesAsync();
+
+		return Results.Ok($"El departamento {departamento.Nombre} fue modificado correctamente");
+	}
+
+	return Results.NotFound($"No se encontró el departamento con el id {id}");
+});
+
+app.MapDelete("/api/departamentos/del/{id}", async([FromServices] EmpresaContext dbContext, int id) =>
+{
+	var departamento = await dbContext.Departamento.FindAsync(id);
+
+	if (departamento != null)
+	{
+		dbContext.Departamento.Remove(departamento);
+
+		await dbContext.SaveChangesAsync();
+
+		return Results.Ok($"El departamento {departamento.Nombre} fue eliminado correctamente");
+	}
+
+	return Results.NotFound($"No se encontró el departamento con el id {id}");
+});
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
