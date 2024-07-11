@@ -97,6 +97,27 @@ namespace Empresa.Migrations
                     { 4, "Tonala" }
                 });
 
+            migrationBuilder.InsertData(
+                table: "Departamento",
+                columns: new[] { "DepartamentoId", "Nombre", "Descripcion"},
+                values: new object[,]
+                {
+                    { 1, "Desarrollo", "Dev"},
+                    { 2, "Administracion", "Adm"},
+                    { 3, "Diseño", "marketing" }
+                }
+                );
+
+            migrationBuilder.InsertData(
+                table: "Empleado",
+                columns: new[] { "EmpleadoId", "Nombre", "FechaIngreso","Puesto", "Sueldo", "CiudadId"},
+                values: new object[,]
+                {
+                    { 1, "Chris", DateTime.Now, "Web Master", 18000, 1},
+                    { 2, "Edith", DateTime.Now, "Contadora", 15000, 2 },
+                    { 3, "Claudia", DateTime.Now, "Marketing", 12000, 3 }
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Empleado_CiudadId",
                 table: "Empleado",

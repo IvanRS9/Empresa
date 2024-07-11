@@ -36,7 +36,8 @@ app.MapPost("/api/empleados/add", async ([FromServices] EmpresaContext dbContext
 		Nombre = empleadoDTO.Nombre,
 		Puesto = empleadoDTO.Puesto,
 		Sueldo = empleadoDTO.Sueldo,
-		CiudadId = empleadoDTO.CiudadId
+		CiudadId = empleadoDTO.CiudadId,
+		FechaIngreso = DateTime.Now
 	};
 
 	await dbContext.Empleado.AddAsync(empleado);
@@ -148,6 +149,111 @@ app.MapDelete("/api/departamentos/del/{id}", async([FromServices] EmpresaContext
 	}
 
 	return Results.NotFound($"No se encontró el departamento con el id {id}");
+});
+
+app.MapGet("/api/empleados/orderDesc", async ([FromServices] EmpresaContext dbContext) =>
+{
+    var empleados = await dbContext.Empleado.Include(e => e.Ciudad).OrderByDescending(e => e.Nombre).Select(e => new
+    {
+        e.EmpleadoId,
+        e.Nombre,
+        e.FechaIngreso,
+        e.Puesto,
+        e.Sueldo,
+        NombreCiudad = e.Ciudad.Nombre
+    }).ToListAsync();
+
+    return Results.Ok(empleados);
+});
+
+app.MapGet("/api/empleados/empleadosWDepart", async([FromServices] EmpresaContext dbContext) =>
+{
+    var empleados = await dbContext.Empleado
+        .Include(e => e.EmpleadoDepartamentos)
+        .ThenInclude(ed => ed.Departamento)
+        .Select(e => new
+        {
+            e.EmpleadoId,
+            e.Nombre,
+            e.FechaIngreso,
+            e.Puesto,
+            e.Sueldo,
+            Departamentos = e.EmpleadoDepartamentos.Select(ed => new
+            {
+                ed.Departamento.DepartamentoId,
+                ed.Departamento.Nombre,
+                ed.Departamento.Descripcion
+            })
+        })
+        .ToListAsync();
+
+    return Results.Ok(empleados);
+});
+
+app.MapGet("/api/departamentos/departWempl", async([FromServices] EmpresaContext dbContext) =>
+{
+    var departamentos = await dbContext.Departamento
+        .Include(d => d.EmpleadoDepartamento)
+        .ThenInclude(ed => ed.Empleado)
+        .Select(d => new
+        {
+            d.DepartamentoId,
+            d.Nombre,
+            d.Descripcion,
+            Empleados = d.EmpleadoDepartamento.Select(ed => new
+            {
+                ed.Empleado.EmpleadoId,
+                ed.Empleado.Nombre,
+                ed.Empleado.FechaIngreso,
+                ed.Empleado.Puesto,
+                ed.Empleado.Sueldo
+            })
+        })
+        .ToListAsync();
+
+    return Results.Ok(departamentos);
+});
+
+app.MapGet("/api/empleados/porCiudad", async([FromServices] EmpresaContext dbContext) =>
+{
+    var empleadosPorCiudad = await dbContext.Empleado
+        .GroupBy(e => e.Ciudad.Nombre)
+        .Select(g => new
+        {
+            Ciudad = g.Key,
+            CantidadEmpleados = g.Count()
+        })
+        .ToListAsync();
+
+    return Results.Ok(empleadosPorCiudad);
+});
+
+app.MapGet("/api/empleados/salarioProm", async ([FromServices] EmpresaContext dbContext) =>
+{
+    var salariosPromedioCiudad = await dbContext.Empleado
+        .GroupBy(e => e.Ciudad.Nombre)
+        .Select(g => new
+        {
+            Ciudad = g.Key,
+            SalarioPromedio = g.Average(e => e.Sueldo)
+        })
+        .ToListAsync();
+
+    var salariosPromedioDepartamento = await dbContext.EmpleadoDepartamento
+        .GroupBy(ed => ed.Departamento.Nombre)
+        .Select(g => new
+        {
+            Departamento = g.Key,
+            SalarioPromedio = g.Average(ed => ed.Empleado.Sueldo)
+        })
+        .OrderByDescending(g => g.SalarioPromedio)
+        .FirstOrDefaultAsync();
+
+    return Results.Ok(new
+    {
+        SalariosPromedioCiudad = salariosPromedioCiudad,
+        MejorPagadoDepartamento = salariosPromedioDepartamento
+    });
 });
 
 // Configure the HTTP request pipeline.
