@@ -118,7 +118,17 @@ namespace Empresa.Migrations
                     { 3, "Claudia", DateTime.Now, "Marketing", 12000, 3 }
                 });
 
-            migrationBuilder.CreateIndex(
+			migrationBuilder.InsertData(
+								table: "EmpleadoDepartamento",
+												columns: new[] { "EmpleadoId", "DepartamentoId" },
+																values: new object[,]
+																{
+					{ 1, 1 },
+					{ 2, 2 },
+					{ 3, 3 }
+				});
+
+			migrationBuilder.CreateIndex(
                 name: "IX_Empleado_CiudadId",
                 table: "Empleado",
                 column: "CiudadId");
